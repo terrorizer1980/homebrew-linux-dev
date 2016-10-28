@@ -22,7 +22,7 @@ module Homebrew
     safe_system "git", "commit", file
     ENV["GIT_EDITOR"] = git_editor
 
-    safe_system "git", "show"
+    safe_system "git", "show" if ARGV.verbose?
   end
 end
 
