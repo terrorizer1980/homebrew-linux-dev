@@ -14,6 +14,12 @@ Tools for Linuxbrew developers
 brew tap linuxbrew/developer
 ```
 
+## Documentation
+
+Linuxbrew developers' guides and procedures
+
++ **merge-homebrew-core.md**: Documentation for `merge-homebrew` command
+
 ## Adding new tools
 
 Read the ["External Commands" Linuxbrew document](https://github.com/Homebrew/brew/blob/master/docs/External-Commands.md) to see how to create Homebrew external commands.
