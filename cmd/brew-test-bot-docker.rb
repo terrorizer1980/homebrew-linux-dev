@@ -7,8 +7,11 @@ module Homebrew
   module_function
 
   def test_bot_docker
+    if ENV["BINTRAY_USER"].nil? || ENV["BINTRAY_KEY"].nil?
+      raise "Missing BINTRAY_USER or BINTRAY_KEY variables!"
+    end
+
     argv = ARGV.join(" ")
-    ENV["BINTRAY_USER"] ||= "linuxbrewtestbot"
     safe_system "docker", "run", "--name=linuxbrew-test-bot",
       "-e", "BINTRAY_USER", "-e", "BINTRAY_KEY",
       "linuxbrew/linuxbrew",
