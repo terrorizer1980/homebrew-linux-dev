@@ -81,13 +81,15 @@ module Homebrew
   @n = 0
 
   def build_bottle(formula)
-    tap_dir = formula.tap.formula_dir
+    tap = formula.tap
+    tap_dir = tap.formula_dir
     remote = tap_dir.cd { determine_remote }
     odie "#{formula}: Failed to determine a remote to use for Pull Request" if remote.nil?
     tag = (ARGV.value("tag") || "x86_64_linux").to_sym
     return ohai "#{formula}: Skipping because a bottle is not needed" if formula.bottle_unneeded?
     return ohai "#{formula}: Skipping because bottles are disabled" if formula.bottle_disabled?
     return ohai "#{formula}: Skipping because it has a bottle already" if formula.bottle_specification.tag?(tag)
+    return ohai "#{formula}: Skipping because #{tap} does not support Linux" if tap.user == "Homebrew" && tap.repo != "science"
     return if open_pull_request? formula
 
     @n += 1
