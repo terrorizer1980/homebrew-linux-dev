@@ -89,7 +89,7 @@ module Homebrew
     return ohai "#{formula}: Skipping because a bottle is not needed" if formula.bottle_unneeded?
     return ohai "#{formula}: Skipping because bottles are disabled" if formula.bottle_disabled?
     return ohai "#{formula}: Skipping because it has a bottle already" if formula.bottle_specification.tag?(tag)
-    return ohai "#{formula}: Skipping because #{tap} does not support Linux" if tap.user == "Homebrew" && tap.repo != "science"
+    return ohai "#{formula}: Skipping because #{tap} does not support Linux" if slug(tap)[/^Homebrew/] && tap.repo != "science"
     return if open_pull_request? formula
 
     @n += 1
