@@ -27,7 +27,7 @@ module Homebrew
       type: "pr", state: "open", repo: slug(formula.tap))
     prs = prs.select { |pr| pr["title"].start_with? "#{formula}: " }
     if prs.any?
-      ohai "#{formula}: Skipping because a PR is open"
+      opoo "#{formula}: Skipping because a PR is open"
       prs.each { |pr| puts "#{pr["title"]} (#{pr["html_url"]})" }
     end
     prs.any?
@@ -72,7 +72,7 @@ module Homebrew
         ohai "Checking that specified remote exists in #{Dir.pwd}" if ARGV.verbose?
         determine_remote
         unless `git status --porcelain 2>/dev/null`.chomp.empty?
-          return ohai "Warning! You have uncommitted changes to #{Dir.pwd}"
+          return opoo "You have uncommitted changes to #{Dir.pwd}"
         end
       end
     end
@@ -105,7 +105,7 @@ module Homebrew
     branch = "bottle-#{formula}"
     cd tap_dir do
       unless Utils.popen_read("git", "branch", "--list", branch).empty?
-        return ohai "#{formula}: Skipping because branch #{branch} already exists" unless ARGV.force?
+        return odie "#{formula}: Branch #{branch} already exists" unless ARGV.force?
         ohai "#{formula}: Removing branch #{branch} in #{tap_dir}" if ARGV.verbose?
         safe_system "git", "branch", "-D", branch
       end
@@ -118,7 +118,7 @@ module Homebrew
       unless ARGV.dry_run?
         safe_system "git", "commit", formula.path, "-m", message
         unless Utils.popen_read("git", "branch", "-r", "--list", "#{remote}/#{branch}").empty?
-          return ohai "#{formula}: Skipping because branch #{branch} already exists on remote #{remote}" unless ARGV.force?
+          return odie "#{formula}: Remote branch #{remote}/#{branch} already exists" unless ARGV.force?
           ohai "#{formula}: Removing branch #{branch} from #{remote}" if ARGV.verbose?
           safe_system "git", "push", "--delete", remote, branch 
         end
