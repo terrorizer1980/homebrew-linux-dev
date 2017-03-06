@@ -1,13 +1,16 @@
-#:  * `pull_circle` [`--ci-upload`] [`--keep-old`] patch-source
+#:  * `pull_circle` [`--ci-upload`] [`--keep-going`] [`--keep-old`] patch-source
 #:    Download bottles from Circle CI.
 #:
 #:    `--ci-upload` Upload the bottles to Bintray using `brew test-bot --ci-upload`
+#:    `--keep-going` Continue  as  much  as  possible after an error
 #:    `--keep-old` Build new bottles for a single platform
 
 module Homebrew
   def ci_upload(issue)
     env = { "CIRCLE_PR_NUMBER" => issue }
-    args = ARGV.include?("--keep-old") ? ["--keep-old"] : []
+    args = []
+    args << "--keep-going" if ARGV.include? "--keep-going"
+    args << "--keep-old" if ARGV.include? "--keep-old"
     system env, HOMEBREW_BREW_FILE, "test-bot", "--ci-upload", *args
   end
 
