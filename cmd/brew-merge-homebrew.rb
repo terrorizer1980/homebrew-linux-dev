@@ -24,7 +24,7 @@ module Homebrew
     odie "Please add a remote with the name 'homebrew' in #{Dir.pwd}" unless remotes.include? "homebrew"
     odie "Please add a remote with the name 'origin' in #{Dir.pwd}" unless remotes.include? "origin"
 
-    safe_system git, "pull", "--ff-only", "origin"
+    safe_system git, "pull", "--ff-only", "origin", "master"
     safe_system git, "fetch", "homebrew"
     start_sha1 = Utils.popen_read(git, "rev-parse", "origin/master").chomp
     end_sha1 = Utils.popen_read(git, "rev-parse", "homebrew/master").chomp
@@ -32,7 +32,6 @@ module Homebrew
     puts "Start commit: #{start_sha1}"
     puts "End   commit: #{end_sha1}"
 
-    safe_system git, "checkout", "master"
     args = []
     args << "--ff-only" if fast_forward
     system git, "merge", *args, "homebrew/master", "-m", "Merge branch homebrew/master into linuxbrew/master"
