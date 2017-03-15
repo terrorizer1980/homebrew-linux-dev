@@ -153,11 +153,11 @@ module Homebrew
   def merge_homebrew
     Utils.ensure_git_installed!
     repos = %w[--brew --core --dupes --science]
-    args = (ARGV & repos).empty? ? repos : ARGV
-    merge_brew if args.include? "--brew"
-    merge_core if args.include? "--core"
-    merge_dupes if args.include? "--dupes"
-    merge_science if args.include? "--science"
+    odie "Specify one of #{repos.join " "}" if (ARGV & repos).empty?
+    merge_brew if ARGV.include? "--brew"
+    merge_core if ARGV.include? "--core"
+    merge_dupes if ARGV.include? "--dupes"
+    merge_science if ARGV.include? "--science"
   end
 end
 
