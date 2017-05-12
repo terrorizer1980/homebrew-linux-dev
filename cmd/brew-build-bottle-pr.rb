@@ -10,6 +10,8 @@
 #:    If `--force` is passed, delete local and remote 'bottle-<name>' branches if they exist. Use with care.
 
 module Homebrew
+  module_function
+
   # The GitHub slug of the {Tap}.
   # Not simply "#{user}/homebrew-#{repo}", because the slug of homebrew/core
   # may be either Homebrew/homebrew-core or Linuxbrew/homebrew-core.

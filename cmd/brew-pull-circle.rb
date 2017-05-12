@@ -6,6 +6,8 @@
 #:    `--keep-old` Build new bottles for a single platform
 
 module Homebrew
+  module_function
+
   def ci_upload(issue)
     env = { "CIRCLE_PR_NUMBER" => issue }
     args = []

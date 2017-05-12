@@ -9,6 +9,8 @@
 require "date"
 
 module Homebrew
+  module_function
+
   def editor
     return @editor if @editor
     @editor = [which_editor]

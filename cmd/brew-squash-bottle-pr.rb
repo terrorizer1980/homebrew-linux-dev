@@ -1,6 +1,8 @@
 require "formula"
 
 module Homebrew
+  module_function
+
   # Squash the last two commits of build-bottle-pr.
   # Usage:
   #    brew build-bottle-pr foo
