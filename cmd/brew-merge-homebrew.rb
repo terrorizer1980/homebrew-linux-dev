@@ -38,7 +38,7 @@ module Homebrew
 
     safe_system git, "pull", "--ff-only", "origin", "master"
     safe_system git, "fetch", "homebrew"
-    homebrew_commits.each { |sha1| git_merge_commit sha1, fast_forward }
+    homebrew_commits.each { |sha1| git_merge_commit sha1, fast_forward: fast_forward }
   end
 
   def resolve_conflicts
