@@ -66,8 +66,7 @@ module Homebrew
     cd(CoreTap.instance.path) do
       git_merge
       conflict_files = resolve_conflicts
-      next if conflict_files.empty?
-      safe_system git, "commit"
+      safe_system git, "commit" unless conflict_files.empty?
       conflicts = conflict_files.map { |s| s.gsub(%r{^Formula/|\.rb$}, "") }
       message = "Merge #{Date.today}\n\n" + conflicts.map { |s| "+ [ ] #{s}\n" }.join
       File.write(".git/PULLREQ_EDITMSG", message)
