@@ -93,7 +93,12 @@ module Homebrew
 
   def migrate_formula(formula)
     tap = Tap.new *(ARGV.value("tap") || "homebrew/core").split("/")
+    if formula.tap.to_s == tap.to_s
+      opoo "#{formula.name} is already in #{tap}"
+      return
+    end
     return if open_pull_request? formula, tap
+
     add_pr = add_formula formula, tap
     remove_formula formula, tap, add_pr
   end
