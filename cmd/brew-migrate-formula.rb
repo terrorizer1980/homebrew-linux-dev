@@ -54,8 +54,8 @@ module Homebrew
       puts add_pr
       safe_system "git", "checkout", "master"
       safe_system "git", "branch", "-D", branch
+      return add_pr
     end
-    add_pr
   end
 
   def remove_formula(formula, tap, add_pr)
