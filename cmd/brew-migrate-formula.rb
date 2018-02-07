@@ -30,24 +30,28 @@ module Homebrew
       opoo "Skipping new formula PR because formula already exists: #{dest}"
       return
     end
-    odie "Formula already exists: #{dest}" if dest.exist?
 
-    safe_system HOMEBREW_BREW_FILE, "style", formula.full_name unless ARGV.include? "--skip-style"
-    safe_system HOMEBREW_BREW_FILE, "install", "-s", formula.full_name unless ARGV.include? "--skip-install"
-    safe_system HOMEBREW_BREW_FILE, "audit", "--new-formula", formula.full_name unless ARGV.include? "--skip-audit"
-
-    contents = formula.path.read
-    if tap.user == "homebrew"
-      contents.sub!(/^  # doi .+?\n/m, "")
+    if dest.exist?
+      opoo "Formula already exists: #{dest}"
     else
-      contents.sub!(/^  # doi /, "  # cite ")
+      contents = formula.path.read
+      if tap.user == "homebrew"
+        contents.sub!(/^  # doi .+?\n/m, "")
+      else
+        contents.sub!(/^  # doi /, "  # cite ")
+      end
+      contents.sub!(/^  # tag .+?\n/m, "")
+      contents.sub!(/  bottle do.+?end\n\n?/m, "")
+      dest.write contents
     end
-    contents.sub!(/^  # tag .+?\n/m, "")
-    contents.sub!(/  bottle do.+?end\n\n?/m, "")
-    dest.write contents
 
     puts "Editing #{dest}"
     with_homebrew_path { safe_system *which_editor.split, dest }
+
+    full_name = "#{tap}/#{formula.name}"
+    safe_system HOMEBREW_BREW_FILE, "style", full_name unless ARGV.include? "--skip-style"
+    safe_system HOMEBREW_BREW_FILE, "install", "-s", full_name unless ARGV.include? "--skip-install"
+    safe_system HOMEBREW_BREW_FILE, "audit", "--new-formula", full_name unless ARGV.include? "--skip-audit"
 
     cd dest.dirname do
       branch = "migrate-#{formula.name}"
@@ -58,7 +62,7 @@ module Homebrew
       message = "#{formula.name}: import from #{formula.tap}"
       safe_system "git", "commit", "-m", message, dest.basename
       safe_system "git", "push", remote, branch
-      add_pr = Utils.popen_read "hub", "pull-request", err: :err
+      add_pr = Utils.popen_read "hub", "pull-request", "-m", message, err: :err
       odie "hub pull-request failed" unless $CHILD_STATUS.success?
       puts add_pr
       safe_system "git", "checkout", "master"
@@ -91,7 +95,7 @@ module Homebrew
 
       safe_system "git", "commit", "-m", message
       safe_system "git", "push", remote, branch
-      safe_system "hub", "pull-request", "-a", remote, "-l", "migration"
+      safe_system "hub", "pull-request", "-a", remote, "-l", "migration", "-m", message
       safe_system "git", "checkout", "master"
       safe_system "git", "branch", "-D", branch
     end
