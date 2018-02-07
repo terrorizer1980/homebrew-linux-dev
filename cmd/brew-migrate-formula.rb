@@ -95,7 +95,7 @@ module Homebrew
 
       safe_system "git", "commit", "-m", message
       safe_system "git", "push", remote, branch
-      safe_system "hub", "pull-request", "-a", remote, "-l", "migration", "-m", message
+      safe_system "hub", "pull-request", "-a", remote, "-l", "migrate", "-m", message
       safe_system "git", "checkout", "master"
       safe_system "git", "branch", "-D", branch
     end
