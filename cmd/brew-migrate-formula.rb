@@ -38,7 +38,7 @@ module Homebrew
       if tap.user == "homebrew"
         contents.sub!(/^  # doi .+?\n/m, "")
       else
-        contents.sub!(/^  # doi /, "  # cite ")
+        contents.sub!(/^  # doi "/, "  # cite \"https://doi.org/")
       end
       contents.sub!(/^  # tag .+?\n/m, "")
       contents.sub!(/  bottle do.+?end\n\n?/m, "")
