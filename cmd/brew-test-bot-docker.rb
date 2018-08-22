@@ -24,7 +24,7 @@ module Homebrew
         brew test-bot #{argv}
         status=$?
         ls
-        brew test-bot --ci-upload --bintray-org=linuxbrew
+        brew test-bot --ci-upload --bintray-org=linuxbrew --git-name=LinuxbrewTestBot --git-email=testbot@linuxbrew.sh
         head *.json
         exit $status
         EOS
