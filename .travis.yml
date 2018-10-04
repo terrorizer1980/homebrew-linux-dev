@@ -19,9 +19,10 @@ before_install:
       brew update || brew update;
       rm -rf "$(brew --repo $TRAVIS_REPO_SLUG)";
     else
-      HOMEBREW="$HOME/.linuxbrew/Homebrew";
-      git clone --depth=1 https://github.com/Linuxbrew/brew "$HOMEBREW";
-      export PATH="$HOMEBREW/bin:$PATH";
+      git clone --depth=1 https://github.com/Linuxbrew/brew "$HOME/.linuxbrew/Homebrew";
+      mkdir "$HOME/.linuxbrew/bin";
+      ln -s ../Homebrew/bin/brew "$HOME/.linuxbrew/bin/";
+      PATH="$HOME/.linuxbrew/bin:/usr/bin:/bin";
       umask 022;
     fi
   - mkdir -p "$(brew --repo $TRAVIS_REPO_SLUG)"
