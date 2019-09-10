@@ -81,15 +81,6 @@ module Homebrew
     end
   end
 
-  # Add --keep-old to the CircleCI configuration.
-  def keep_old
-    Utils::Inreplace.inreplace(".circleci/config.yml") do |s|
-      s.sub! /brew test-bot$/, "brew test-bot --keep-old"
-      s.sub! /ci-upload$/, "ci-upload?keep-old=1"
-    end
-    safe_system "git", "commit", ".circleci/config.yml", "-m", "drop! CircleCI: Add --keep-old [Linux]"
-  end
-
   # Open a pull request using hub.
   def hub_pull_request(formula, remote, branch, message)
     ohai "#{formula}: Using remote '#{remote}' to submit Pull Request" if ARGV.verbose?
@@ -99,7 +90,7 @@ module Homebrew
     if hub_version >= Version.new("2.3.0")
       args += ["-a", ENV["HOMEBREW_GITHUB_USER"] || ENV["USER"], "-l", "bottle"]
     else
-      opoo "Please upgrade hub\n  brew upgrade --devel hub"
+      opoo "Please upgrade hub\n  brew upgrade hub"
     end
     args << "--browse" if ARGV.include? "--browse"
     safe_system "hub", "pull-request", "-h", "#{remote}:#{branch}", "-m", message, *args
@@ -151,7 +142,6 @@ module Homebrew
         f.write "# #{title}\n#{s}" if ARGV.value("dry_run").nil?
       end
       if ARGV.value("dry_run").nil?
-        keep_old if ARGV.include? "--keep-old"
         safe_system "git", "commit", formula.path, "-m", title
         unless Utils.popen_read("git", "branch", "-r", "--list", "#{remote}/#{branch}").empty?
           return odie "#{formula}: Remote branch #{remote}/#{branch} already exists" unless ARGV.force?
