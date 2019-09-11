@@ -1,12 +1,11 @@
-#:  * `build-bottle-pr` [`--remote=<user>`] [`--tag=<tag>`] [`--limit=<num>`] [`--dry-run`] [`--verbose`] [`--force`]:
+#:  * `build-bottle-pr` [`--remote=<user>`] [`--limit=<num>`] [`--dry-run`] [`--verbose`] [`--tap-dir`] [`--force`]:
 #:    Submit a pull request to build a bottle for a formula.
 #:
-#:    If `--remote` is passed, use the specified GitHub remote.
-#:      Otherwise, check $HOMEBREW_GITHUB_USER followed by $USER.
-#:    If `--tag` is passed, use the specified bottle tag. Defaults to x86_64_linux.
+#:    If `--remote` is passed, use the specified GitHub remote. Otherwise, use `origin`.
 #:    If `--limit` is passed, make at most the specified number of PR's at once. Defaults to 10.
 #:    If `--dry-run` is passed, do not actually make any PR's.
 #:    If `--verbose` is passed, print extra information.
+#:    If `--tap-dir` is passed, use the specified full path to a tap. Otherwise, use the Linuxbrew standard install location.
 #:    If `--force` is passed, delete local and remote 'bottle-<name>' branches if they exist. Use with care.
 #:    If `--browse` is passed, open a web browser for the new pull request.
 
@@ -15,70 +14,20 @@ require "English"
 module Homebrew
   module_function
 
-  # The GitHub slug of the {Tap}.
-  # Not simply tap.full_name, because the slug of homebrew/core
-  # may be either Homebrew/homebrew-core or Homebrew/linuxbrew-core.
-  def slug(tap)
-    return tap.full_name unless tap.remote
-
-    x = tap.remote[%r{^https://github\.com/([^.]+)(\.git)?$}, 1]
-    (tap.official? && !x.nil?) ? x.capitalize : x
-  end
-
-  def open_pull_request?(formula)
-    prs = GitHub.issues_for_formula(formula,
-      type: "pr", state: "open", repo: slug(formula.tap))
-    prs = prs.select { |pr| pr["title"].start_with? "#{formula}: " }
-    if prs.any?
-      opoo "#{formula}: Skipping because a PR is open"
-      prs.each { |pr| puts "#{pr["title"]} (#{pr["html_url"]})" }
-    end
-    prs.any?
+  def formula
+    @formula ||= ARGV.last.to_s
   end
 
   def limit
     @limit ||= (ARGV.value("limit") || "10").to_i
   end
 
-  def determine_remote
-    remotes = Utils.popen_read("git", "remote").split
-
-    # if --remote has been specified, it has to be correct
-    if !ARGV.value("remote").nil?
-      return ARGV.value("remote") if remotes.include?(ARGV.value("remote"))
-      onoe "No remote '#{ARGV.value("remote")}' was found in #{Dir.pwd}"
-    else
-      # Check HOMEBREW_GITHUB_USER and USER remotes
-      [ENV["HOMEBREW_GITHUB_USER"], ENV["USER"]].each { |n| return n if remotes.include? n }
-
-      # Nothing worked
-      onoe "Please provide a valid remote name to use for Pull Requests"
-      onoe "You can do so:"
-      onoe " * on the command line via --remote=NAME"
-      onoe " * by setting HOMEBREW_GITHUB_USER env. variable"
-      onoe " * or by having a remote named as your USER env. variable"
-    end
-
-    onoe "Available remotes:"
-    remotes.each do |f|
-      url = `git remote get-url #{f}`.chomp
-      onoe "* #{f.ljust(16)} #{url}"
-    end
-    exit 1
+  def remote
+    @remote ||= ARGV.value("remote") || "origin"
   end
 
-  def check_remotes(formulae)
-    dirs = []
-    formulae.each { |f| dirs |= [f.tap.formula_dir] }
-    dirs.each do |dir|
-      cd dir do
-        ohai "Checking that specified remote exists in #{Dir.pwd}" if ARGV.verbose?
-        determine_remote
-        unless `git status --porcelain 2>/dev/null`.chomp.empty?
-          return opoo "You have uncommitted changes to #{Dir.pwd}"
-        end
-      end
-    end
+  def tap_dir
+    @tap_dir ||= ARGV.value("tap-dir") || "/home/linuxbrew/.linuxbrew/Homebrew/Library/Taps/homebrew/homebrew-core"
   end
 
   # Open a pull request using hub.
@@ -100,24 +49,8 @@ module Homebrew
   @n = 0
 
   def build_bottle(formula)
-    tap = formula.tap
-    tap_dir = tap.formula_dir
-    remote = tap_dir.cd { determine_remote }
-    odie "#{formula}: Failed to determine a remote to use for Pull Request" if remote.nil?
-    tag = (ARGV.value("tag") || "x86_64_linux").to_sym
-
-    return ohai "#{formula}: Skipping because it depends on macOS" if depends_on_macos?(formula)
-    return ohai "#{formula}: Skipping because a bottle is not needed" if formula.bottle_unneeded?
-    return ohai "#{formula}: Skipping because bottles are disabled" if formula.bottle_disabled?
-    return ohai "#{formula}: Skipping because it has a bottle already" if formula.bottle_specification.tag?(tag)
-    return ohai "#{formula}: Skipping because #{tap} does not support Linux" if slug(tap) == "Homebrew/homebrew-core"
-    return if open_pull_request? formula
-
     @n += 1
     return ohai "#{formula}: Skipping because GitHub rate limits pull requests (limit = #{limit})." if @n > limit
-
-    system HOMEBREW_BREW_FILE, "audit", formula.path
-    opoo "Please fix audit failure for #{formula}" unless $CHILD_STATUS.success?
 
     title = "#{formula}: Build a bottle for Linuxbrew"
     message = <<~EOS
@@ -130,21 +63,24 @@ module Homebrew
 
     branch = "bottle-#{formula}"
     cd tap_dir do
+      formula_path = "Formula/#{formula}.rb"
       unless Utils.popen_read("git", "branch", "--list", branch).empty?
         return odie "#{formula}: Branch #{branch} already exists" unless ARGV.force?
+
         ohai "#{formula}: Removing branch #{branch} in #{tap_dir}" if ARGV.verbose?
         safe_system "git", "branch", "-D", branch
       end
       safe_system "git", "checkout", "-b", branch, "master"
-      File.open(formula.path, "r+") do |f|
+      File.open(formula_path, "r+") do |f|
         s = f.read
         f.rewind
         f.write "# #{title}\n#{s}" if ARGV.value("dry_run").nil?
       end
       if ARGV.value("dry_run").nil?
-        safe_system "git", "commit", formula.path, "-m", title
+        safe_system "git", "commit", formula_path, "-m", title
         unless Utils.popen_read("git", "branch", "-r", "--list", "#{remote}/#{branch}").empty?
           return odie "#{formula}: Remote branch #{remote}/#{branch} already exists" unless ARGV.force?
+
           ohai "#{formula}: Removing branch #{branch} from #{remote}" if ARGV.verbose?
           safe_system "git", "push", "--delete", remote, branch
         end
@@ -155,32 +91,13 @@ module Homebrew
     end
   end
 
-  def depends_on_macos?(formula)
-    formula.requirements.any? { |req| (req.instance_of? MacOSRequirement) && !req.version_specified? }
-  end
-
-  def shell(cmd)
-    output = `#{cmd}`
-    raise ErrorDuringExecution, cmd unless $CHILD_STATUS.success?
-    output
-  end
-
-  def brew(args)
-    shell "#{HOMEBREW_PREFIX}/bin/brew #{args}"
-  end
-
   def build_bottle_pr
-    odie "Please install hub (brew install hub) before proceeding" unless which "hub"
-    odie "No formula has been specified" if ARGV.formulae.empty?
+    ENV["HOMEBREW_DISABLE_LOAD_FORMULA"] = "1"
 
-    formulae = ARGV.formulae
-    unless ARGV.one?
-      deps = brew("deps -n --union #{formulae.join " "}").split
-      ohai "Adding following dependencies: #{deps.join ", "}" if ARGV.verbose? && !deps.empty?
-      formulae = deps.map { |f| Formula[f] } + formulae
-    end
-    check_remotes formulae
-    formulae.each { |f| build_bottle f }
+    odie "Please install hub (brew install hub) before proceeding" unless which "hub"
+    odie "No formula has been specified" unless formula
+
+    build_bottle(formula)
   end
 end
 
