@@ -1,8 +1,16 @@
-#:  * `announce` <formulae>:
-#:    Create an announcement for new formulae.
+require "cli/parser"
 
 module Homebrew
   module_function
+
+  def announce_args
+    Homebrew::CLI::Parser.new do
+      usage_banner <<~EOS
+        `announce` <formulae>
+        Create an announcement for new formulae.
+      EOS
+    end
+  end
 
   def announce_formula(formula)
     contents = formula.path.read
@@ -30,13 +38,13 @@ module Homebrew
     EOS
   end
 
-  def announce_formulae
-    raise FormulaUnspecifiedError if ARGV.named.empty?
+  def announce
+    announce_args.parse
 
-    ARGV.resolved_formulae.each do |formula|
+    raise FormulaUnspecifiedError if Homebrew.args.named.empty?
+
+    Homebrew.args.resolved_formulae.each do |formula|
       announce_formula formula
     end
   end
 end
-
-Homebrew.announce_formulae
