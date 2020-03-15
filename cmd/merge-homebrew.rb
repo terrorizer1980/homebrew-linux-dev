@@ -115,7 +115,7 @@ module Homebrew
       sha1 = Utils.popen_read(git, "rev-parse", "--short", homebrew_commits.last).chomp
       branch = "merge-#{Date.today}-#{sha1}"
       merge_title = "Merge Homebrew/homebrew-core into Homebrew/linuxbrew-core"
-      message = "Merge #{Date.today} #{sha1}\n#{merge_title}\n\n" + conflicts.map { |s| "+ [ ] #{s}\n" }.join
+      message = "Merge #{Date.today} #{sha1}\n\n#{merge_title}\n\n" + conflicts.map { |s| "+ [ ] #{s}\n" }.join
 
       added_files = added_files_after_merge
       unless added_files.empty?
