@@ -56,7 +56,7 @@ module Homebrew
     raise FormulaUnspecifiedError if Homebrew.args.named.empty?
 
     formula = Homebrew.args.resolved_formulae.first
-    event = args.dispatched? ? "repository_dispatch" : "pull_request"
+    event = Homebrew.args.dispatched? ? "repository_dispatch" : "pull_request"
     tap_name = Homebrew.args.tap || "homebrew/core"
     repo = Tap.fetch(tap_name).full_name
 
@@ -94,7 +94,7 @@ module Homebrew
 
     odie "No workflow run matching the criteria was found" unless workflow_run
 
-    unless args.quiet?
+    unless Homebrew.args.quiet?
       oh1 "Workflow details:"
       puts JSON.pretty_generate(workflow_run.slice("id", "event", "status", "conclusion", "created_at"))
     end
