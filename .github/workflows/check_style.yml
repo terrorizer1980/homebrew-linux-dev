@@ -4,23 +4,24 @@ on:
   push:
     branches:
       - master
-  pull_request:
+  pull_request: []
 
 jobs:
   style:
     if: startsWith(github.repository, 'Homebrew')
     runs-on: ubuntu-latest
     env:
+      HOMEBREW_COLOR: 1
       HOMEBREW_NO_ANALYTICS: 1
       HOMEBREW_NO_AUTO_UPDATE: 1
     steps:
       - name: Update Homebrew
-        run: brew update-reset "$(brew --repo)"
+        run: brew update-reset $(brew --repo)
       - name: Checkout tap
         uses: actions/checkout@v2
       - name: Setup tap
         run: |
-          mkdir -p "$(dirname $(brew --repository ${{github.repository}}))"
-          cp -a "$PWD" "$(brew --repository ${{github.repository}})"
-      - name: Run brew test-bot --only-tap-syntax
-        run: brew test-bot --only-tap-syntax
+          mkdir -p $(dirname $(brew --repo $GITHUB_REPOSITORY))
+          ln -s $PWD $(brew --repo $GITHUB_REPOSITORY)
+      - name: Check style
+        run: brew style $GITHUB_REPOSITORY
