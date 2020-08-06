@@ -13,9 +13,10 @@ jobs:
     steps:
       - uses: actions/checkout@v2
       - name: Build Docker image
-        run: docker build -t homebrew/debian7 .
+        run: docker build -t brew .
       - name: Deploy the Docker image to Docker Hub
         if: github.ref == 'refs/heads/master'
         run: |
           docker login -u brewtestbot -p ${{secrets.DOCKER_TOKEN}}
-          docker push homebrew/debian7
+          docker tag brew homebrew/debian7:latest
+          docker push homebrew/debian7:latest
