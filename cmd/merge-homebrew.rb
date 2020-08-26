@@ -34,7 +34,7 @@ module Homebrew
   end
 
   def git
-    @git ||= Utils.git_path
+    @git ||= Utils::Git.path
   end
 
   def mergetool?
@@ -168,7 +168,7 @@ module Homebrew
   def merge_homebrew
     args = merge_homebrew_args.parse
 
-    Utils.ensure_git_installed!
+    Utils::Git.ensure_installed!
 
     if !args.core? && !args.tap
       odie "Specify --core as an argument to merge homebrew-core or --tap to merge to user/tap"
