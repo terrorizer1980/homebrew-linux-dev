@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 require "cli/parser"
 require "utils/github"
 require "utils/tty"
@@ -16,15 +18,15 @@ module Homebrew
         By default searches through workflow runs triggered by pull_request event.
       EOS
       flag "--tap=",
-        description: "Search given tap."
+           description: "Search given tap."
       switch "--dispatched",
-        description: "Search through workflow runs triggered by repository_dispatch event."
+             description: "Search through workflow runs triggered by repository_dispatch event."
       switch "--quiet",
-        description: "Print only the logs or error if occurred, nothing more."
+             description: "Print only the logs or error if occurred, nothing more."
       switch "--keep-tmp",
-        description: "Retain the temporary directory containing the downloaded workflow."
+             description: "Retain the temporary directory containing the downloaded workflow."
       switch "--markdown",
-        description: "Format the output using Markdown."
+             description: "Format the output using Markdown."
       named 1
     end
   end

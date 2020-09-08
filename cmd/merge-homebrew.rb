@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 require "cli/parser"
 require "date"
 
@@ -93,8 +95,8 @@ module Homebrew
     remote = ENV["HOMEBREW_GITHUB_USER"] || ENV["USER"]
     safe_system git, "push", remote, "HEAD:#{branch}"
     safe_system "hub", "pull-request", "-f", "-h", "#{remote}:#{branch}", "-m", message,
-      "-a", remote, "-l", "merge",
-      *("--browse" if args.browse?)
+                "-a", remote, "-l", "merge",
+                *("--browse" if args.browse?)
   end
 
   def added_files_after_merge

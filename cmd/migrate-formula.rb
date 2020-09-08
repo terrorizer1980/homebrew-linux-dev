@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 require "cli/parser"
 
 module Homebrew
@@ -25,7 +27,7 @@ module Homebrew
 
   def open_pull_request?(formula, tap)
     prs = GitHub.issues_for_formula(formula,
-      type: "pr", state: "open", repo: tap.full_name)
+                                    type: "pr", state: "open", repo: tap.full_name)
     prs = prs.select { |pr| pr["title"].strip.start_with? "#{formula}: " }
     if prs.any?
       opoo "#{formula}: Skipping because a PR is open"
@@ -101,7 +103,7 @@ module Homebrew
         tap_migrations << "  \"#{formula.name}\": \"#{tap}\""
         tap_migrations.sort!
         rm tap_migrations_path
-        tap_migrations_path.write "{\n" + tap_migrations.join(",\n") + "\n}\n"
+        tap_migrations_path.write "{\n#{tap_migrations.join(",\n")}\n}\n"
         safe_system "git", "-C", tap_migrations_path.dirname, "add", tap_migrations_path.basename
       end
 

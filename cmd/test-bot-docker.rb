@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 #: `test-bot-docker` <formulae>...
 #:
 #:  Build a bottle for the specified formulae using a Docker container.
@@ -28,21 +30,21 @@ module Homebrew
 
     formulae = args.named
     safe_system "docker", "run", "--name=linuxbrew-test-bot",
-      "-e", "HOMEBREW_BINTRAY_USER", "-e", "HOMEBREW_BINTRAY_KEY",
-      "homebrew/brew",
-      "sh", "-c", <<~EOS
-        git config --global user.name LinuxbrewTestBot
-        git config --global user.email testbot@linuxbrew.sh
-        brew tap linuxbrew/xorg
-        mkdir linuxbrew-test-bot
-        cd linuxbrew-test-bot
-        brew test-bot #{formulae.join(" ")}
-        status=$?
-        ls
-        brew test-bot --ci-upload --bintray-org=linuxbrew --git-name=LinuxbrewTestBot --git-email=testbot@linuxbrew.sh
-        head *.json
-        exit $status
-      EOS
+                "-e", "HOMEBREW_BINTRAY_USER", "-e", "HOMEBREW_BINTRAY_KEY",
+                "homebrew/brew",
+                "sh", "-c", <<~EOS
+                  git config --global user.name LinuxbrewTestBot
+                  git config --global user.email testbot@linuxbrew.sh
+                  brew tap linuxbrew/xorg
+                  mkdir linuxbrew-test-bot
+                  cd linuxbrew-test-bot
+                  brew test-bot #{formulae.join(" ")}
+                  status=$?
+                  ls
+                  brew test-bot --ci-upload --bintray-org=linuxbrew --git-name=LinuxbrewTestBot --git-email=testbot@linuxbrew.sh
+                  head *.json
+                  exit $status
+                EOS
 
     safe_system "docker", "cp", "linuxbrew-test-bot:/home/linuxbrew/linuxbrew-test-bot", "."
     cd "linuxbrew-test-bot" do

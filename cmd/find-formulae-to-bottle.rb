@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 require "cli/parser"
 require "formula"
 
@@ -52,10 +54,9 @@ module Homebrew
     return opoo "#{formula}: Skipping because a bottle is not needed" if formula.bottle_unneeded?
     return opoo "#{formula}: Skipping because bottles are disabled" if formula.bottle_disabled?
     return opoo "#{formula}: Skipping because it has a bottle already" if formula.bottle_specification.tag?(tag)
+    return if slug(formula.tap) != "Homebrew/homebrew-core"
 
-    if slug(formula.tap) == "Homebrew/homebrew-core"
-      opoo "#{formula}: Skipping because #{formula.tap} does not support Linux"
-    end
+    opoo "#{formula}: Skipping because #{formula.tap} does not support Linux"
   end
 
   def find_formulae_to_bottle

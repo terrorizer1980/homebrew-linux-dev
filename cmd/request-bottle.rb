@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 require "cli/parser"
 require "utils/github"
 
@@ -14,7 +16,7 @@ module Homebrew
       switch "--ignore-errors",
              description: "Make the workflow action ignore e.g., audit errors and upload bottles if they exist."
       flag "--issue=",
-        description: "If specified, post a comment to this issue number if the request-bottle job fails."
+           description: "If specified, post a comment to this issue number if the request-bottle job fails."
     end
   end
 
