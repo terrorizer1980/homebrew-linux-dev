@@ -56,7 +56,7 @@ module Homebrew
     odie "User not specified" if user.empty?
     odie "Email not specified" if email.empty?
 
-    args.resolved_formulae.each do |formula|
+    args.named.to_resolved_formulae.each do |formula|
       event_name = formula.name.to_s
       event_name += " (##{args.issue})" if args.issue
 
