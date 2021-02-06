@@ -78,7 +78,7 @@ module Homebrew
       formulae_to_bottle.push(@formula) if @formula
     end
 
-    tag = "x86_64_linux".to_sym
+    tag = :x86_64_linux
     formulae_to_bottle.reject! do |formula|
       should_not_build_linux_bottle?(Formula[formula], tag)
     end
