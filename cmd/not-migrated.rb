@@ -20,6 +20,10 @@ module Homebrew
            description: "Homebrew git ref (default `homebrew/master`)."
       flag "--linuxbrew-ref=",
            description: "Linuxbrew git ref (default `master`)."
+      switch "--only-names",
+             description: "Only print names of the formulae with diffs."
+      switch "--sort",
+             description: "Sort formulae alphabetically."
 
       named_args max: 1
     end
@@ -35,11 +39,14 @@ module Homebrew
 
     CoreTap.instance.path.cd do
       counter = 0
+
       formulae = if args.no_named?
-        Formula
+        Formula.select { |formula| formula.tap.core_tap? }
       else
         args.named.to_formulae
       end
+
+      formulae = formulae.sort if args.sort?
 
       formulae.each do |formula|
         diff = Utils.safe_popen_read Utils::Git.path,
@@ -52,7 +59,11 @@ module Homebrew
 
         if diff.present?
           counter += 1
-          puts diff
+          if args.only_names?
+            puts formula.name
+          else
+            puts diff
+          end
         end
 
         exit if args.limit && counter == args.limit.to_i
